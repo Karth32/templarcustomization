@@ -37,7 +37,7 @@ public class RenameAction implements ModAction, BehaviourProvider, ActionPerform
     }
 
     public boolean action(Action action, Creature performer, Item subject, Creature target, short num, float counter) {
-        if (target.getTemplate().getTemplateId() == 32 || target.getTemplate().getTemplateId() == 33) { // Sanity check, and a fallback if someone uses actions mod.
+        if (target.getTemplate().getTemplateId() == 32 || target.getTemplate().getTemplateId() == 33 &&  subject.getTemplateId() == NewItems.spiritContractID || subject.getTemplateId() == 176 || subject.getTemplateId() == 315) { // Sanity check, and a fallback if someone uses actions mod.
             vCheck = performer.getCitizenVillage();
             if (performer.getPower() >= 2 ) {
                 RenameQuestion.send(performer, target, subject);

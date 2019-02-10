@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import static org.karth.wurmunlimited.mods.templarcustomizer.BadWords.badWordCheck;
 
 public class RenameQuestion implements ModQuestion {
 
@@ -31,7 +32,13 @@ public class RenameQuestion implements ModQuestion {
     @Override
     public void sendQuestion(Question question) {
         final StringBuilder buf = new StringBuilder(ModQuestions.getBmlHeader(question));
+
+        //performer.getCommunicator().sendNormalServerMessage("Debug: renameTarget.getTemplateId() = " + renameTarget.getTemplateId());
+        //performer.getCommunicator().sendNormalServerMessage("Debug: performer.getTemplateId() = " + performer.getTemplateId());
+
         buf.append("harray{input{text=\'" + renameTarget.getName() + "\'; id=\'data1\'; maxchars=\'40\'}}");
+        buf.append("text{text=\'\'}");
+        buf.append("text{text=\'If you leave this blank the guard will revert to it's default name.\'}");
         buf.append("text{text=\'\'}");
         if (renameTarget.getSex() == 0) {
             buf.append("radio{ group=\'sex\'; id=\'sexmale\';text=\'Male\';selected=\'true\'}");
@@ -55,13 +62,9 @@ public class RenameQuestion implements ModQuestion {
         renameText = answer.getProperty("data1");
         renameText2 = answer.getProperty("data1");
         guardGender = answer.getProperty("sex");
-        int tXPos;
-        int tYPos;
         boolean toDestroy = true;
 
-        renameText = renameText + "-x"; // Modloader doesn't like null variables being passed around. This is to ensure renameText is never null... I hope
-        tXPos = (int) renameTarget.getPosX() / 4;
-        tYPos = (int) renameTarget.getPosY() / 4;
+        renameText += "-x"; // Modloader doesn't like null variables being passed around. This is to ensure renameText is never null... I hope
 
         if (subject.getTemplateId() == 176 || subject.getTemplateId() == 315) { toDestroy = false; } // Don't want to destroy GM wands!
 
@@ -73,20 +76,27 @@ public class RenameQuestion implements ModQuestion {
         }
 
         if(Objects.equals(renameText, "-x")) {
-            renameText = "Spirit templar";
-            if (renameTarget.getTemplate().getTemplateId() == 33) { renameText = "Spirit shadow"; }
-            performer.getCommunicator().sendNormalServerMessage("The nickname field is blank. Setting name to " + renameText);
+            renameText = renameTarget.getTemplate().getName();
+            performer.getCommunicator().sendNormalServerMessage("You didn't specify a nickname. The name will be reverted to " + renameText + ".");
             renameTarget.setName(renameText);
-            renameTarget.blinkTo(tXPos,tYPos,renameTarget.getLayer(),renameTarget.getFloorLevel());
-            if (toDestroy) {Items.destroyItem(subject.getWurmId()); }
+            renameTarget.setVisible(false);
+            renameTarget.setVisible(true);
+            if (toDestroy) { Items.destroyItem(subject.getWurmId()); }
             return;
         }
 
         if (!containsIllegalCharacters(renameText2, performer)) {
-            renameTarget.setName(renameText2);
-            // There's probably a better method to force the client to update the NPC's name. But I can't find it.
-            renameTarget.blinkTo(tXPos,tYPos,renameTarget.getLayer(),renameTarget.getFloorLevel());
-            if (toDestroy) {Items.destroyItem(subject.getWurmId()); }
+            if (!badWordCheck(renameText2)) {
+                renameTarget.setName(renameText2);
+                // There's probably a better method to force the client to update the NPC's name. But I can't find it.
+                //renameTarget.blinkTo(tXPos, tYPos, renameTarget.getLayer(), renameTarget.getFloorLevel());
+                // Found it!
+                renameTarget.setVisible(false);
+                renameTarget.setVisible(true);
+                if (toDestroy) { Items.destroyItem(subject.getWurmId());}
+            } else {
+                performer.getCommunicator().sendNormalServerMessage("Your name contained an inappropriate word.");
+            }
         }
 
     }
@@ -99,7 +109,7 @@ public class RenameQuestion implements ModQuestion {
         char[] chars = text.toCharArray();
         boolean toReturn = false;
 
-        if (text.length() > 40) {
+        if (text.length() > 39) {
             performer.getCommunicator().sendNormalServerMessage("The nickname must be less than 40 characters.");
             return true;
         }
@@ -120,4 +130,8 @@ public class RenameQuestion implements ModQuestion {
 
         return toReturn;
     }
+
+
+
+
 }

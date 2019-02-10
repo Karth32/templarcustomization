@@ -5,13 +5,19 @@ import com.wurmonline.shared.constants.ItemMaterials;
 import org.gotti.wurmunlimited.modsupport.ItemTemplateBuilder;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class NewItems {
+
+    private static Logger logger;
 
     public static int spiritContractID;
     public static ItemTemplate spiritContract;
 
     static void register() throws IOException {
+        logger = Logger.getLogger("Karth.NewItems");
+
         spiritContract = new ItemTemplateBuilder("karth.spiritcontract")
                 .name("spirit contract", "spirit contracts", "A contract written with the blood of a powerful creature. The wording is such to allow a mayor to nickname a spirit templar on his or her own deed.")
                 .imageNumber((short) 640)
@@ -21,8 +27,7 @@ public class NewItems {
                 .value(50)
                 .material(ItemMaterials.MATERIAL_PAPER)
                 .modelName("model.artifact.scrollbind.")
-                //.modelName("model.resource.sheet.papyrus.")
-                .difficulty((float) 2.0)
+                .difficulty((float) 50.0)
                 .behaviourType((short) 1)
                 .itemTypes( new short[] {
                         ItemTypes.ITEM_TYPE_NOT_MISSION,
