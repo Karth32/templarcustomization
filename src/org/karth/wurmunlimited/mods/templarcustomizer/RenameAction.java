@@ -24,7 +24,7 @@ public class RenameAction implements ModAction, BehaviourProvider, ActionPerform
 
     @Override
     public List<ActionEntry> getBehavioursFor(Creature performer, Item subject, Creature target) {
-        if (subject != null && subject.getTemplateId() == 176 || subject.getTemplateId() == 315 || subject.getTemplateId() == NewItems.spiritContractID && target.getTemplate().getTemplateId() == 32 || target.getTemplate().getTemplateId() == 33) {
+        if (subject != null && subject.getTemplateId() == 176 || subject.getTemplateId() == 315 || subject.getTemplateId() == NewItems.spiritContractID && target.getTemplate().getTemplateId() == 32 || target.getTemplate().getTemplateId() == 33 && !target.isPlayer()) {
             return Arrays.asList(actionEntry);
         } else {
             return null;
@@ -37,8 +37,14 @@ public class RenameAction implements ModAction, BehaviourProvider, ActionPerform
     }
 
     public boolean action(Action action, Creature performer, Item subject, Creature target, short num, float counter) {
-        if (target.getTemplate().getTemplateId() == 32 || target.getTemplate().getTemplateId() == 33 &&  subject.getTemplateId() == NewItems.spiritContractID || subject.getTemplateId() == 176 || subject.getTemplateId() == 315) { // Sanity check, and a fallback if someone uses actions mod.
+        if (target.getTemplate().getTemplateId() == 32 || target.getTemplate().getTemplateId() == 33 &&  subject.getTemplateId() == NewItems.spiritContractID || subject.getTemplateId() == 176 || subject.getTemplateId() == 315 && !target.isPlayer()) { // Sanity check, and a fallback if someone uses actions mod.
             vCheck = performer.getCitizenVillage();
+            if (target.isPlayer())
+            {
+                performer.getCommunicator().sendNormalServerMessage("The gods would never allow you to rename another wurmian!");
+                return true;
+            }
+
             if (performer.getPower() >= 2 ) {
                 RenameQuestion.send(performer, target, subject);
             } else {

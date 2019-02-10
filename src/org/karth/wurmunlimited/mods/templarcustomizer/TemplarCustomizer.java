@@ -4,16 +4,15 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.wurmonline.server.creatures.Communicator;
 import com.wurmonline.server.items.*;
 import com.wurmonline.server.skills.SkillList;
 import org.gotti.wurmunlimited.modloader.interfaces.*;
 import org.gotti.wurmunlimited.modsupport.actions.ModActions;
 
-import org.karth.wurmunlimited.mods.templarcustomizer.RenameAction;
-
 import static org.karth.wurmunlimited.mods.templarcustomizer.BadWords.loadBadWordConfig;
 
-public class TemplarCustomizer implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedListener, ItemTemplatesCreatedListener {
+public class TemplarCustomizer implements WurmServerMod, Configurable, PreInitable, Initable, ServerStartedListener, ItemTemplatesCreatedListener, PlayerMessageListener {
 
     private static Logger logger;
     public static boolean bKarthDebug = false;
@@ -57,4 +56,18 @@ public class TemplarCustomizer implements WurmServerMod, Configurable, PreInitab
         spiritContract.addRequirement(new CreationRequirement(2, ItemList.shaft, 1, true)); // Shaft
         loadBadWordConfig();
     }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public boolean onPlayerMessage(Communicator communicator, String msg) {
+       if (msg.startsWith("/reloadbadwords") && communicator.getPlayer().getPower() >= 2) {
+            logger.info (communicator.getPlayer().getName() + " forced a reload of the bad word filter.");
+            communicator.sendNormalServerMessage("The server will reload the bad word filter...");
+            loadBadWordConfig();
+            return true;
+        }
+        return false;
+    }
+
+
 }

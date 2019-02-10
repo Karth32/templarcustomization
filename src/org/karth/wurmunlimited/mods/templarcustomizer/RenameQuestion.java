@@ -7,8 +7,10 @@ import com.wurmonline.server.questions.Question;
 import org.gotti.wurmunlimited.modsupport.questions.ModQuestion;
 import org.gotti.wurmunlimited.modsupport.questions.ModQuestions;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static org.karth.wurmunlimited.mods.templarcustomizer.BadWords.badWordCheck;
@@ -38,7 +40,8 @@ public class RenameQuestion implements ModQuestion {
 
         buf.append("harray{input{text=\'" + renameTarget.getName() + "\'; id=\'data1\'; maxchars=\'40\'}}");
         buf.append("text{text=\'\'}");
-        buf.append("text{text=\'If you leave this blank the guard will revert to it's default name.\'}");
+        buf.append("text{text=\'If you leave this blank the guard will revert to its\'}");
+        buf.append("text{text=\'default name.\'}");
         buf.append("text{text=\'\'}");
         if (renameTarget.getSex() == 0) {
             buf.append("radio{ group=\'sex\'; id=\'sexmale\';text=\'Male\';selected=\'true\'}");
@@ -81,18 +84,29 @@ public class RenameQuestion implements ModQuestion {
             renameTarget.setName(renameText);
             renameTarget.setVisible(false);
             renameTarget.setVisible(true);
+            try {
+                renameTarget.getStatus().save(); // Force the server to save the status of the templar.
+            } catch (IOException e) {
+                logger.log(Level.WARNING, "Failed to update creature " + renameTarget.getTemplate().getName() + " WurmID: (" + renameTarget.getWurmId() + ") in the database!");
+            }
             if (toDestroy) { Items.destroyItem(subject.getWurmId()); }
             return;
         }
 
         if (!containsIllegalCharacters(renameText2, performer)) {
             if (!badWordCheck(renameText2)) {
+                performer.getCommunicator().sendNormalServerMessage("Your " + renameTarget.getName() + " shall now be called " + renameText2 + "!");
                 renameTarget.setName(renameText2);
                 // There's probably a better method to force the client to update the NPC's name. But I can't find it.
                 //renameTarget.blinkTo(tXPos, tYPos, renameTarget.getLayer(), renameTarget.getFloorLevel());
                 // Found it!
                 renameTarget.setVisible(false);
                 renameTarget.setVisible(true);
+                try {
+                    renameTarget.getStatus().save(); // Force the server to save the status of the templar.
+                } catch (IOException e) {
+                    logger.log(Level.WARNING, "Failed to update creature " + renameTarget.getTemplate().getName() + " WurmID: (" + renameTarget.getWurmId() + ") in the database!");
+                }
                 if (toDestroy) { Items.destroyItem(subject.getWurmId());}
             } else {
                 performer.getCommunicator().sendNormalServerMessage("Your name contained an inappropriate word.");
